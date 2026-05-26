@@ -20,11 +20,16 @@
 
 body {
   margin: 0;
-  font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+  ont-family: "Inter", Arial, sans-serif;;
   color: var(--ink);
   background: #F3F5F8;
 }
-
+h1,
+h2,
+h3,
+.eyebrow {
+  font-family: "Cormorant Garamond", Garamond, "Times New Roman", serif;
+}
 a {
   color: inherit;
 }
