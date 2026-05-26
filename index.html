@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GU-Q Hotel & Serviced Apartment Catalogue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Georgetown University in Qatar</p>
+      <h1>Hotel Catalogue</h1>
+      <p class="hero-subtitle">Procurement and Payables (P2P)</p>
+      <p class="hero-subtitle">Office Of Finance</p>
+      <p>This catalogue provides a clear overview of partner hotels and serviced apartments, including unit types, rates, amenities, discounts, policies, and useful links.</p>
+      <div class="hero-actions">
+        <button id="refreshBtn" type="button">Refresh data</button>
+        <button id="printBtn" type="button" class="secondary">Print catalogue</button>
+        <!--<button id="exportBtn" type="button" class="secondary">Export visible CSV</button>-->
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="toolbar">
+        <div class="field">
+          <label for="searchInput">Search</label>
+          <input id="searchInput" type="search" placeholder="Search hotel, area, unit, amenities...">
+        </div>
+        <div class="field">
+          <label for="areaFilter">Area</label>
+          <select id="areaFilter"></select>
+        </div>
+        <div class="field">
+          <label for="categoryFilter">Category</label>
+          <select id="categoryFilter"></select>
+        </div>
+        <div class="field">
+          <label for="bedroomFilter">Bedrooms</label>
+          <select id="bedroomFilter"></select>
+        </div>
+        <div class="field">
+          <label for="petFilter">Pet</label>
+          <select id="petFilter">
+            <option value="">Any pet policy</option>
+            <option value="yes">Pet-friendly only</option>
+            <option value="no">Not pet-friendly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sortSelect">Sort</label>
+          <select id="sortSelect">
+            <option value="name">Name A-Z</option>
+            <option value="price-low">Price: low to high</option>
+            <option value="price-high">Price: high to low</option>
+            <option value="bedrooms">Bedrooms</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong id="resultCount">0 options</strong><span>Visible options</span></div>
+        <div class="stat"><strong id="propertyCount">0</strong><span>Properties</span></div>
+        <div class="stat"><strong id="minRate">—</strong><span>Lowest monthly rate</span></div>
+        <div class="stat"><strong id="petCount">0</strong><span>Pet-friendly options</span></div>
+      </div>
+    </section>
+
+    <div class="content-head">
+      <div>
+        <h2>Catalogue</h2>
+        <div class="small-note" id="updatedAt">Loading data...</div>
+      </div>
+      <div class="small-note">One hotel card shows all approved bedroom/unit rows. Click linked bedroom rows to open a room video, tour, or website. Compare selected hotels to request a reservation.</div>
+    </div>
+
+    <section id="catalogueGrid" class="grid"></section>
+
+    <section id="compareDrawer" class="compare-drawer">
+      <div id="compareContent"></div>
+    </section>
+
+    <p class="footer-note">
+      Note: rates and availability must be verified before publication. Keep internal negotiation notes inside the Internal_Notes tab or the Internal Notes column, not in public display fields.
+    </p>
+  </main>
+
+  <div id="detailModal" class="modal">
+    <div id="modalBody"></div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="sample-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
