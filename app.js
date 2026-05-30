@@ -7,6 +7,8 @@ let catalogueRows = [];
 let filteredRows = [];
 let filteredGroups = [];
 const selectedForCompare = new Map();
+const compareUnitSelections = new Map();
+let isCompareCollapsed = false;
 
 const els = {
   grid: document.querySelector("#catalogueGrid"),
@@ -647,6 +649,45 @@ function findGroupById(id) {
   return filteredGroups.find(item => item._id === id) || groupRows(catalogueRows).find(item => item._id === id);
 }
 
+function rowsForComparePicker(group) {
+  return sortUnitRows((group.allRows && group.allRows.length ? group.allRows : group.rows) || []);
+}
+
+function ensureCompareUnitSelection(group) {
+  const rows = rowsForComparePicker(group);
+  let selectedIds = compareUnitSelections.get(group._id);
+
+  if (!selectedIds) {
+    selectedIds = new Set((group.rows && group.rows.length ? group.rows : rows).map(row => row._id));
+    compareUnitSelections.set(group._id, selectedIds);
+  }
+
+  const availableIds = new Set(rows.map(row => row._id));
+  [...selectedIds].forEach(id => {
+    if (!availableIds.has(id)) selectedIds.delete(id);
+  });
+
+  return selectedIds;
+}
+
+function selectedRowsForCompare(group) {
+  const rows = rowsForComparePicker(group);
+  const selectedIds = ensureCompareUnitSelection(group);
+  return rows.filter(row => selectedIds.has(row._id));
+}
+
+function rateRangeFromRows(rows) {
+  const rates = rows.map(row => row._rateQar).filter(Boolean);
+
+  if (!rates.length) return "Rate on request";
+
+  const min = Math.min(...rates);
+  const max = Math.max(...rates);
+
+  if (min === max) return formatMoney(min);
+  return `${formatMoney(min)} – ${formatMoney(max)}`;
+}
+
 function toggleCompare(id) {
   const group = findGroupById(id);
 
@@ -654,6 +695,7 @@ function toggleCompare(id) {
 
   if (selectedForCompare.has(id)) {
     selectedForCompare.delete(id);
+    compareUnitSelections.delete(id);
   } else {
     if (selectedForCompare.size >= 4) {
       alert("Compare up to 4 hotels at a time.");
@@ -661,19 +703,68 @@ function toggleCompare(id) {
     }
 
     selectedForCompare.set(id, group);
+    ensureCompareUnitSelection(group);
+    isCompareCollapsed = false;
   }
 
   renderCompare();
   renderCards(filteredGroups);
 }
 
-function buildSelfFundedMailto(group) {
+function removeCompareGroup(id) {
+  selectedForCompare.delete(id);
+  compareUnitSelections.delete(id);
+  renderCompare();
+  renderCards(filteredGroups);
+}
+
+function toggleCompareUnit(groupId, rowId) {
+  const group = selectedForCompare.get(groupId) || findGroupById(groupId);
+
+  if (!group) return;
+
+  const selectedIds = ensureCompareUnitSelection(group);
+
+  if (selectedIds.has(rowId)) {
+    selectedIds.delete(rowId);
+  } else {
+    selectedIds.add(rowId);
+  }
+
+  renderCompare();
+}
+
+function removeUnitFromCompare(groupId, rowId) {
+  const group = selectedForCompare.get(groupId) || findGroupById(groupId);
+
+  if (!group) return;
+
+  const selectedIds = ensureCompareUnitSelection(group);
+  selectedIds.delete(rowId);
+  renderCompare();
+}
+
+function toggleCompareSize() {
+  isCompareCollapsed = !isCompareCollapsed;
+  renderCompare();
+}
+
+function clearCompare() {
+  selectedForCompare.clear();
+  compareUnitSelections.clear();
+  isCompareCollapsed = false;
+  renderCompare();
+  renderCards(filteredGroups);
+}
+
+function buildSelfFundedMailto(group, rowsOverride) {
   const email = String(group.contactEmail || firstNonEmpty(group.rows || [], "Contact Email") || "").trim();
 
   if (!email) return "";
 
   const contactName = String(group.contactName || "Team").trim();
-  const units = group.rows.map(row => {
+  const rows = rowsOverride && rowsOverride.length ? rowsOverride : selectedRowsForCompare(group);
+  const units = rows.map(row => {
     const pieces = [
       get(row, "Unit Type") || "Unit type not listed",
       sizeOnlyLabel(row).replace(/&amp;/g, "&"),
@@ -685,7 +776,7 @@ function buildSelfFundedMailto(group) {
   }).join("\n");
 
   const subject = `Reservation enquiry - ${group.name}`;
-  const body = `Dear ${contactName},\n\nI hope you are doing well. I would like to enquire about availability and booking steps for ${group.name}.\n\nUnit option(s) of interest:\n${units}\n\nKindly share the current availability, final rate, payment requirements, and reservation process.\n\nBest regards,`;
+  const body = `Dear ${contactName},\n\nI hope you are doing well. I would like to enquire about availability and booking steps for ${group.name}.\n\nUnit option(s) of interest:\n${units || "- Please share the available unit options."}\n\nKindly share the current availability, final rate, payment requirements, and reservation process.\n\nBest regards,`;
 
   const safeEmail = email.replace(/\s+/g, "");
   return `mailto:${safeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -701,13 +792,20 @@ function handleReservationChoice(select, id) {
 
   if (!group) return;
 
+  const rows = selectedRowsForCompare(group);
+
+  if (!rows.length) {
+    alert("Select at least one unit option first.");
+    return;
+  }
+
   if (choice === "guq") {
     window.open(GUQ_FUNDED_RESERVATION_URL, "_blank", "noopener,noreferrer");
     return;
   }
 
   if (choice === "self") {
-    const mailto = buildSelfFundedMailto(group);
+    const mailto = buildSelfFundedMailto(group, rows);
 
     if (!mailto) {
       alert("No contact email is listed for this hotel in Google Sheets. Add it under Contact Email, then refresh the website.");
@@ -718,17 +816,69 @@ function handleReservationChoice(select, id) {
   }
 }
 
-function unitSummaryForCompare(group) {
-  return group.rows.map(row => {
-    const note = String(get(row, "Rate Notes") || "").trim();
-    return `
-      <div class="compare-unit-line">
-        <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
-        <span>${sizeOnlyLabel(row)} · ${formatMoney(row._rateQar)}</span>
-        ${note ? `<em>${escapeHtml(shortText(note, 70))}</em>` : ""}
+function compareUnitPickerHtml(group) {
+  const rows = rowsForComparePicker(group);
+  const selectedIds = ensureCompareUnitSelection(group);
+
+  if (!rows.length) return "";
+
+  return `
+    <details class="compare-unit-picker">
+      <summary title="Add or remove unit options" aria-label="Add or remove unit options for ${escapeHtml(group.name)}">＋</summary>
+      <div class="compare-unit-picker-list">
+        ${rows.map(row => {
+          const isSelected = selectedIds.has(row._id);
+          return `
+            <button type="button" class="compare-unit-choice${isSelected ? " selected" : ""}" onclick="toggleCompareUnit('${escapeHtml(group._id)}', '${escapeHtml(row._id)}')">
+              <span class="choice-icon">${isSelected ? "✓" : "＋"}</span>
+              <span class="choice-text">
+                <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
+                <em>${sizeOnlyLabel(row)} · ${formatMoney(row._rateQar)}</em>
+              </span>
+            </button>
+          `;
+        }).join("")}
       </div>
+    </details>
+  `;
+}
+
+function unitSummaryForCompare(group) {
+  const selectedRows = selectedRowsForCompare(group);
+
+  if (!selectedRows.length) {
+    return `
+      <div class="compare-unit-empty">No unit selected.</div>
+      ${compareUnitPickerHtml(group)}
     `;
-  }).join("");
+  }
+
+  return `
+    <div class="compare-unit-scroll">
+      ${selectedRows.map(row => {
+        const note = String(get(row, "Rate Notes") || "").trim();
+        return `
+          <div class="compare-unit-line">
+            <div class="compare-unit-main">
+              <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
+              <span>${sizeOnlyLabel(row)} · ${formatMoney(row._rateQar)}</span>
+              ${note ? `<em>${escapeHtml(shortText(note, 70))}</em>` : ""}
+            </div>
+            <button type="button" class="unit-remove-icon" onclick="removeUnitFromCompare('${escapeHtml(group._id)}', '${escapeHtml(row._id)}')" title="Remove this unit" aria-label="Remove this unit">×</button>
+          </div>
+        `;
+      }).join("")}
+    </div>
+    ${compareUnitPickerHtml(group)}
+  `;
+}
+
+function collapsedCompareHtml(groups) {
+  return `
+    <div class="compare-collapsed-list">
+      ${groups.map(group => `<span>${escapeHtml(group.name)}</span>`).join("")}
+    </div>
+  `;
 }
 
 function renderCompare() {
@@ -743,48 +893,58 @@ function renderCompare() {
   els.compareDrawer.classList.add("open");
 
   els.compareContent.innerHTML = `
-    <div class="compare-panel">
-      <div class="compare-heading">
-        <div>
-          <strong>Compare selected options</strong>
-          <span>Use the reservation menu for GU-Q funded or self-funded bookings.</span>
+    <div class="compare-panel${isCompareCollapsed ? " collapsed" : ""}">
+      <div class="compare-toolbar" aria-label="Compare controls">
+        <span class="compare-count">${groups.length} hotel${groups.length === 1 ? "" : "s"}</span>
+        <div class="compare-icons">
+          <button type="button" class="icon-button" onclick="toggleCompareSize()" title="${isCompareCollapsed ? "Expand" : "Shrink"} compare window" aria-label="${isCompareCollapsed ? "Expand" : "Shrink"} compare window">${isCompareCollapsed ? "▴" : "▾"}</button>
+          <button type="button" class="icon-button" onclick="clearCompare()" title="Clear compare" aria-label="Clear compare">×</button>
         </div>
       </div>
 
-      <table class="compare-table">
-        <thead>
-          <tr>
-            <th>Hotel</th>
-            <th>Area</th>
-            <th>Bedroom/unit types</th>
-            <th>Rate range</th>
-            <th>Pet</th>
-            <th>Request reservation</th>
-          </tr>
-        </thead>
+      ${isCompareCollapsed ? collapsedCompareHtml(groups) : `
+        <div class="compare-scroll">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Hotel</th>
+                <th>Area</th>
+                <th>Bedroom/unit types</th>
+                <th>Rate range</th>
+                <th>Pet</th>
+                <th>Request</th>
+              </tr>
+            </thead>
 
-        <tbody>
-          ${groups.map(group => `
-            <tr>
-              <td><strong>${escapeHtml(group.name)}</strong></td>
-              <td>${escapeHtml(group.area)}</td>
-              <td>${unitSummaryForCompare(group)}</td>
-              <td>${rateRange(group)}</td>
-              <td>${escapeHtml(group.petValues.join(" / "))}</td>
-              <td>
-                <div class="compare-actions">
-                  <select class="reservation-select" onchange="handleReservationChoice(this, '${escapeHtml(group._id)}')" aria-label="Request reservation for ${escapeHtml(group.name)}">
-                    <option value="">Request reservation</option>
-                    <option value="guq">GU-Q funded</option>
-                    <option value="self">Self-funded email</option>
-                  </select>
-                  <button class="ghost remove-compare" onclick="toggleCompare('${escapeHtml(group._id)}')">Remove</button>
-                </div>
-              </td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
+            <tbody>
+              ${groups.map(group => {
+                const selectedRows = selectedRowsForCompare(group);
+                return `
+                  <tr>
+                    <td>
+                      <div class="compare-hotel-cell">
+                        <strong>${escapeHtml(group.name)}</strong>
+                        <button type="button" class="hotel-remove-icon" onclick="removeCompareGroup('${escapeHtml(group._id)}')" title="Remove hotel" aria-label="Remove hotel">×</button>
+                      </div>
+                    </td>
+                    <td>${escapeHtml(group.area || "Area not listed")}</td>
+                    <td>${unitSummaryForCompare(group)}</td>
+                    <td>${rateRangeFromRows(selectedRows)}</td>
+                    <td>${escapeHtml(group.petValues.join(" / ") || "Not listed")}</td>
+                    <td>
+                      <select class="reservation-select" onchange="handleReservationChoice(this, '${escapeHtml(group._id)}')" aria-label="Request reservation for ${escapeHtml(group.name)}">
+                        <option value="">Request</option>
+                        <option value="guq">GU-Q funded</option>
+                        <option value="self">Self-funded email</option>
+                      </select>
+                    </td>
+                  </tr>
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      `}
     </div>
   `;
 }
@@ -864,6 +1024,8 @@ async function init() {
     : "Using sample data";
 
   selectedForCompare.clear();
+  compareUnitSelections.clear();
+  isCompareCollapsed = false;
   renderCompare();
   applyFilters();
 }
