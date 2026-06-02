@@ -1354,4 +1354,14 @@ textarea {
     width: 100%;
     max-width: none;
   }
+  .hero-office {
+  margin: 10px 0 12px;
+}
+
+.hero-office p {
+  margin: 0;
+  line-height: 1.15;
+  font-size: 1rem;
+  color: #F5F7FA;
+}
 }
