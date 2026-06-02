@@ -1365,3 +1365,288 @@ textarea {
   color: #F5F7FA;
 }
 }
+/* ===== CLEAN HYBRID HOTEL CARD STYLE ===== */
+
+/* Card base: keeps the elegant first design */
+.hotel-card {
+  background: #ffffff;
+  border: 1px solid #d8e0ea;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(6, 37, 82, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hotel-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(6, 37, 82, 0.12);
+}
+
+/* Image: keep premium look */
+.hotel-card img,
+.hotel-image {
+  width: 100%;
+  height: 155px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Card content spacing */
+.hotel-card-body,
+.card-body {
+  padding: 18px 20px 20px;
+}
+
+/* Badge: readable like second design, but cleaner */
+.badge,
+.hotel-badge,
+.property-type {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #062552;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 3px 10px rgba(6, 37, 82, 0.12);
+}
+
+/* Hotel title: stronger but still elegant */
+.hotel-title,
+.hotel-card h3 {
+  margin: 12px 0 5px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 1.18rem;
+  line-height: 1.22;
+  font-weight: 700;
+  color: #061f45;
+}
+
+/* Location text */
+.hotel-location,
+.location {
+  margin: 0 0 12px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: #5d6675;
+}
+
+/* Top chips: clean and compact */
+.hotel-tags,
+.card-tags,
+.amenities,
+.amenities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 10px 0 14px;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Chip style */
+.chip,
+.amenity-chip,
+.tag {
+  padding: 6px 11px;
+  border: 1px solid #d4dde8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #475569;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.73rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Hide too many amenities so the card does not become crowded */
+.amenities .amenity-chip:nth-child(n+5),
+.amenities-list .amenity-chip:nth-child(n+5) {
+  display: none;
+}
+
+/* If your CSS already creates a +more chip, keep it visible */
+.amenity-chip.more,
+.chip.more,
+.tag.more {
+  display: inline-flex !important;
+  background: #f3f6fa;
+  color: #062552;
+  border-color: #d4dde8;
+}
+
+/* Remove internal scrollbar look */
+.amenities::-webkit-scrollbar,
+.amenities-list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Section divider */
+.room-section,
+.unit-section {
+  border-top: 1px solid #d8e0ea;
+  padding-top: 13px;
+  margin-top: 10px;
+}
+
+/* Section title */
+.room-section-title,
+.unit-section-title,
+.hotel-card h4 {
+  margin: 0 0 9px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #061f45;
+}
+
+/* Hide the extra instruction text if it exists */
+.click-hint,
+.room-hint,
+.view-room-hint {
+  display: none !important;
+}
+
+/* Room list box: first design structure, second design clarity */
+.room-list,
+.unit-list {
+  border: 1px solid #d8e0ea;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* Room row */
+.room-row,
+.unit-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 13px;
+  border-bottom: 1px solid #d8e0ea;
+}
+
+.room-row:last-child,
+.unit-row:last-child {
+  border-bottom: none;
+}
+
+/* Room name */
+.room-name,
+.unit-name {
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #1f5fd1;
+}
+
+/* Room size */
+.room-size,
+.unit-size {
+  margin-top: 3px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.76rem;
+  color: #5d6675;
+}
+
+/* Price */
+.room-price,
+.unit-price,
+.price {
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #061f45;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* View room link */
+.view-room,
+.room-link {
+  display: block;
+  margin-top: 4px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #1f5fd1;
+  text-align: right;
+  text-decoration: none;
+}
+
+/* Buttons */
+.card-actions,
+.hotel-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.card-actions button,
+.hotel-actions button,
+.btn {
+  height: 38px;
+  border-radius: 14px;
+  font-family: Garamond, Georgia, serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Main button */
+.btn-primary,
+.view-details {
+  background: #062552;
+  border: 1px solid #062552;
+  color: #ffffff;
+}
+
+/* Compare button */
+.btn-secondary,
+.compare-btn {
+  background: #ffffff;
+  border: 1px solid #cfd8e3;
+  color: #062552;
+}
+
+/* Mobile cleanup */
+@media (max-width: 700px) {
+  .hotel-card img,
+  .hotel-image {
+    height: 145px;
+  }
+
+  .hotel-title,
+  .hotel-card h3 {
+    font-size: 1.08rem;
+  }
+
+  .room-row,
+  .unit-row {
+    padding: 10px 11px;
+  }
+
+  .room-name,
+  .unit-name {
+    font-size: 0.88rem;
+  }
+
+  .room-price,
+  .unit-price,
+  .price {
+    font-size: 0.88rem;
+  }
+}
