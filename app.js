@@ -78,7 +78,6 @@ function normalizeRows(rows) {
         get(row, "Unit Type"),
         get(row, "Amenities / Inclusions"),
         get(row, "Pet Friendly"),
-        get(row, "Rate Notes"),
         get(row, "Booking / Display Notes")
       ].join(" ").toLowerCase()
     }));
@@ -281,7 +280,6 @@ function groupRows(rows) {
       contactName: firstNonEmpty(rowsSorted, "Contact Name"),
       contactEmail: firstNonEmpty(rowsSorted, "Contact Email"),
       contactPhone: firstNonEmpty(rowsSorted, "Contact Phone"),
-      rateNotes: distinctValues(rowsSorted, "Rate Notes").join(" | "),
       minRate: rates.length ? Math.min(...rates) : 0,
       maxRate: rates.length ? Math.max(...rates) : 0,
       bedrooms,
@@ -386,13 +384,11 @@ function sizeOnlyLabel(row) {
 
 function unitRowHtml(row, compact = false) {
   const href = firstLink(row);
-  const rateNote = String(get(row, "Rate Notes") || "").trim();
 
   const content = `
     <div>
       <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
       <span>${sizeOnlyLabel(row)}</span>
-      ${rateNote ? `<span class="rate-note-inline">${escapeHtml(shortText(rateNote, 70))}</span>` : ""}
     </div>
     <div class="unit-side">
       <div class="unit-price">${formatMoney(row._rateQar)}</div>
@@ -517,22 +513,9 @@ function applyFilters() {
   renderCards(filteredGroups);
 }
 
-function rateNotesHtml(rows) {
-  const noteRows = rows.filter(row => String(get(row, "Rate Notes") || "").trim());
-
-  if (!noteRows.length) {
-    return `<p>The rates are subject to change based on availability. Kindly confirm with the procurement team before making decisions.</p>`;
-  }
-
+function rateNotesHtml() {
   return `
-    <div class="rate-notes-list">
-      ${noteRows.map(row => `
-        <div class="rate-note-item">
-          <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
-          <p>${escapeHtml(get(row, "Rate Notes"))}</p>
-        </div>
-      `).join("")}
-    </div>
+    <p>The rates are subject to change based on availability. Kindly confirm with the procurement team before making decisions.</p>
   `;
 }
 
@@ -601,13 +584,11 @@ function openDetails(id) {
           <div class="unit-options-table">
             ${rowsToShow.map(row => {
               const href = firstLink(row);
-              const rateNote = String(get(row, "Rate Notes") || "").trim();
 
               const line = `
                 <div>
                   <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
                   <span>${sizeOnlyLabel(row)}</span>
-                  ${rateNote ? `<span class="rate-note-inline">${escapeHtml(shortText(rateNote, 90))}</span>` : ""}
                 </div>
 
                 <div>
@@ -626,7 +607,7 @@ function openDetails(id) {
 
         <div class="detail-block rate-notes-block" style="margin-top:14px;">
           <h4>Useful rate notes</h4>
-          ${rateNotesHtml(rowsToShow)}
+          ${rateNotesHtml()}
         </div>
 
         ${links.length ? `<div class="links">${links.map(([label, url]) => `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`).join("")}</div>` : ""}
@@ -768,8 +749,7 @@ function buildSelfFundedMailto(group, rowsOverride) {
     const pieces = [
       get(row, "Unit Type") || "Unit type not listed",
       sizeOnlyLabel(row).replace(/&amp;/g, "&"),
-      formatMoney(row._rateQar),
-      get(row, "Rate Notes") ? `Rate note: ${get(row, "Rate Notes")}` : ""
+      formatMoney(row._rateQar)
     ].filter(Boolean);
 
     return `- ${pieces.join(" | ")}`;
@@ -856,13 +836,11 @@ function unitSummaryForCompare(group) {
   return `
     <div class="compare-unit-scroll">
       ${selectedRows.map(row => {
-        const note = String(get(row, "Rate Notes") || "").trim();
         return `
           <div class="compare-unit-line">
             <div class="compare-unit-main">
               <strong>${escapeHtml(get(row, "Unit Type") || "Unit type not listed")}</strong>
               <span>${sizeOnlyLabel(row)} · ${formatMoney(row._rateQar)}</span>
-              ${note ? `<em>${escapeHtml(shortText(note, 70))}</em>` : ""}
             </div>
             <button type="button" class="unit-remove-icon" onclick="removeUnitFromCompare('${escapeHtml(group._id)}', '${escapeHtml(row._id)}')" title="Remove this unit" aria-label="Remove this unit">×</button>
           </div>
@@ -960,7 +938,6 @@ function exportCsv() {
     "Size SQM",
     "Monthly Rate QAR",
     "Monthly Rate USD Approx",
-    "Rate Notes",
     "Pet Friendly",
     "Contact Email",
     "Website URL",
