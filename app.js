@@ -521,7 +521,7 @@ function rateNotesHtml(rows) {
   const noteRows = rows.filter(row => String(get(row, "Rate Notes") || "").trim());
 
   if (!noteRows.length) {
-    return `<p>No rate notes listed. Add rate availability comments in the Rate Notes column in Google Sheets.</p>`;
+    return `<p>The rates are subject to change based on availability. Kindly confirm with the procurement team before making decisions.</p>`;
   }
 
   return `
