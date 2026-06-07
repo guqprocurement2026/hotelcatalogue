@@ -763,6 +763,20 @@ function buildSelfFundedGmailUrl(group, rowsOverride) {
   return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(safeEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
+function openExternalLinkInNewTab(url) {
+  if (!url) return;
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.style.display = "none";
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 function handleReservationChoice(select, id) {
   const choice = select.value;
   select.value = "";
@@ -781,7 +795,7 @@ function handleReservationChoice(select, id) {
   }
 
   if (choice === "guq") {
-    window.open(GUQ_FUNDED_RESERVATION_URL, "_blank", "noopener,noreferrer");
+    openExternalLinkInNewTab(GUQ_FUNDED_RESERVATION_URL);
     return;
   }
 
@@ -793,11 +807,7 @@ function handleReservationChoice(select, id) {
       return;
     }
 
-    const gmailTab = window.open(gmailUrl, "_blank", "noopener,noreferrer");
-
-    if (!gmailTab) {
-      alert("Your browser blocked the Gmail tab. Please allow pop-ups for this website and try again.");
-    }
+    openExternalLinkInNewTab(gmailUrl);
   }
 }
 
