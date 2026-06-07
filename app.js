@@ -678,8 +678,8 @@ function toggleCompare(id) {
     selectedForCompare.delete(id);
     compareUnitSelections.delete(id);
   } else {
-    if (selectedForCompare.size >= 4) {
-      alert("Compare up to 4 hotels at a time.");
+    if (selectedForCompare.size >= 10) {
+      alert("Compare up to 10 hotels at a time.");
       return;
     }
 
