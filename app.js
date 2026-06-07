@@ -301,7 +301,7 @@ function mediaHtml(item) {
   const name = item.name || firstNonEmpty(item.rows || [], "Property Name");
 
   if (image) {
-    return `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.remove(); this.parentElement.insertAdjacentHTML('beforeend','<div class=&quot;media-initials&quot;>${initials(name)}</div>')">`;
+    return `<img src="${escapeHtml(image)}" alt="${escapeHtml(name)}" loading="eager" onerror="this.remove(); this.parentElement.insertAdjacentHTML('beforeend','<div class=&quot;media-initials&quot;>${initials(name)}</div>')">`;
   }
 
   return `<div class="media-initials">${initials(name)}</div>`;
