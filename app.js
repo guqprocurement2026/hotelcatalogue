@@ -760,8 +760,6 @@ function buildSelfFundedGmailUrl(group, rowsOverride) {
 
   const safeEmail = email.replace(/\s+/g, "");
 
-  // Opens Gmail compose in the same browser environment as the catalogue page.
-  // On devices where mail.google.com is associated with the Gmail app, the app may take over.
   return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(safeEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
@@ -795,8 +793,11 @@ function handleReservationChoice(select, id) {
       return;
     }
 
-    // Opens Gmail compose in a new browser tab.
-    window.open(gmailUrl, "_blank", "noopener,noreferrer");
+    const gmailTab = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+
+    if (!gmailTab) {
+      alert("Your browser blocked the Gmail tab. Please allow pop-ups for this website and try again.");
+    }
   }
 }
 
