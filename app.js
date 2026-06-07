@@ -795,13 +795,8 @@ function handleReservationChoice(select, id) {
       return;
     }
 
-    const openedWindow = window.open(gmailUrl, "_blank", "noopener,noreferrer");
-
-    // Fallback for strict popup blockers. Because this is triggered by a user action,
-    // most browsers will open the Gmail compose tab normally.
-    if (!openedWindow) {
-      window.location.href = gmailUrl;
-    }
+    // Opens Gmail compose in a new browser tab.
+    window.open(gmailUrl, "_blank", "noopener,noreferrer");
   }
 }
 
