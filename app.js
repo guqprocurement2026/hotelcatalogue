@@ -738,7 +738,7 @@ function clearCompare() {
   renderCards(filteredGroups);
 }
 
-function buildSelfFundedMailto(group, rowsOverride) {
+function buildSelfFundedGmailUrl(group, rowsOverride) {
   const email = String(group.contactEmail || firstNonEmpty(group.rows || [], "Contact Email") || "").trim();
 
   if (!email) return "";
@@ -759,7 +759,10 @@ function buildSelfFundedMailto(group, rowsOverride) {
   const body = `Dear ${contactName},\n\nI hope you are doing well. I would like to enquire about availability and booking steps for ${group.name}.\n\nUnit option(s) of interest:\n${units || "- Please share the available unit options."}\n\nKindly share the current availability, final rate, payment requirements, and reservation process.\n\nBest regards,`;
 
   const safeEmail = email.replace(/\s+/g, "");
-  return `mailto:${safeEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  // Opens Gmail compose in the same browser environment as the catalogue page.
+  // On devices where mail.google.com is associated with the Gmail app, the app may take over.
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(safeEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 function handleReservationChoice(select, id) {
@@ -785,14 +788,20 @@ function handleReservationChoice(select, id) {
   }
 
   if (choice === "self") {
-    const mailto = buildSelfFundedMailto(group, rows);
+    const gmailUrl = buildSelfFundedGmailUrl(group, rows);
 
-    if (!mailto) {
+    if (!gmailUrl) {
       alert("No contact email is listed for this hotel in Google Sheets. Add it under Contact Email, then refresh the website.");
       return;
     }
 
-    window.location.href = mailto;
+    const openedWindow = window.open(gmailUrl, "_blank", "noopener,noreferrer");
+
+    // Fallback for strict popup blockers. Because this is triggered by a user action,
+    // most browsers will open the Gmail compose tab normally.
+    if (!openedWindow) {
+      window.location.href = gmailUrl;
+    }
   }
 }
 
