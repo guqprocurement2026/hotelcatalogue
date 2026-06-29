@@ -485,7 +485,7 @@ function renderStats(rows, groups) {
 
 function renderCards(groups) {
   if (!groups.length) {
-    els.grid.innerHTML = `<div class="empty">No matching hotels. Check your filters or Approval Status in Google Sheets.</div>`;
+    els.grid.innerHTML = `<div class="empty">No matching hotels at this time.</div>`;
     return;
   }
 
